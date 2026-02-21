@@ -5,7 +5,7 @@ import UserList from "./components/UserList";
 import "./App.css";
 
 export default function App() {
-  const { users, currentUserId, connected } = useSocket();
+  const { users, currentUserId, connected, geoError } = useSocket();
 
   return (
     <div className="app">
@@ -15,6 +15,9 @@ export default function App() {
           {connected ? "Conectado" : "Desconectado"}
         </span>
       </header>
+      {geoError && (
+        <div className="geo-error">{geoError}</div>
+      )}
       <main className="app-body">
         <Map users={users} currentUserId={currentUserId} />
         <UserList users={users} currentUserId={currentUserId} />

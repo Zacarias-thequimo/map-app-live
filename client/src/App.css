@@ -42,6 +42,14 @@ body {
   background: #f44336;
 }
 
+.geo-error {
+  background: #fff3cd;
+  color: #856404;
+  padding: 8px 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
 .app-body {
   display: flex;
   flex: 1;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -34,33 +34,39 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-function RecenterMap({ lat, lng }) {
+function FlyToUser({ lat, lng }) {
   const map = useMap();
+  const hasFlown = useRef(false);
+
   React.useEffect(() => {
-    if (lat && lng) {
-      map.setView([lat, lng], map.getZoom());
+    if (lat && lng && !hasFlown.current) {
+      map.flyTo([lat, lng], 15);
+      hasFlown.current = true;
     }
   }, [lat, lng, map]);
+
   return null;
 }
 
 export default function Map({ users, currentUserId }) {
   const currentUser = users[currentUserId];
-  const center = currentUser
-    ? [currentUser.lat, currentUser.lng]
-    : [38.7223, -9.1393]; // Default: Lisbon
+
+  // Filter only users that have coordinates
+  const usersWithCoords = Object.entries(users).filter(
+    ([, coords]) => coords !== null
+  );
 
   return (
     <div className="map-wrapper">
-      <MapContainer center={center} zoom={13} className="map-container">
+      <MapContainer center={[38.7223, -9.1393]} zoom={3} className="map-container">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {currentUser && (
-          <RecenterMap lat={currentUser.lat} lng={currentUser.lng} />
+          <FlyToUser lat={currentUser.lat} lng={currentUser.lng} />
         )}
-        {Object.entries(users).map(([id, { lat, lng }]) => (
+        {usersWithCoords.map(([id, { lat, lng }]) => (
           <Marker
             key={id}
             position={[lat, lng]}

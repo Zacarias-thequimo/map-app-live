@@ -27,7 +27,7 @@ app.get("*", (req, res, next) => {
   res.sendFile(path.join(clientBuild, "index.html"));
 });
 
-// In-memory store: socketId -> { lat, lng }
+// In-memory store: socketId -> { lat, lng } | null
 const users = new Map();
 
 function broadcastUsers() {
@@ -40,6 +40,8 @@ function broadcastUsers() {
 
 io.on("connection", (socket) => {
   console.log(`User connected: ${socket.id}`);
+  users.set(socket.id, null);
+  broadcastUsers();
 
   socket.on("update-location", ({ lat, lng }) => {
     if (typeof lat === "number" && typeof lng === "number") {

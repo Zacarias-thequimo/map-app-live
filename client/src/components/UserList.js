@@ -9,13 +9,15 @@ export default function UserList({ users, currentUserId }) {
       <h3>Utilizadores Conectados ({entries.length})</h3>
       {entries.length === 0 && <p className="no-users">Nenhum utilizador conectado</p>}
       <ul>
-        {entries.map(([id, { lat, lng }]) => (
+        {entries.map(([id, coords]) => (
           <li key={id} className={id === currentUserId ? "current-user" : ""}>
             <span className="user-label">
               {id === currentUserId ? "Eu" : `Utilizador ${id.slice(0, 6)}`}
             </span>
             <span className="user-coords">
-              {lat.toFixed(5)}, {lng.toFixed(5)}
+              {coords
+                ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
+                : "A obter localização..."}
             </span>
           </li>
         ))}

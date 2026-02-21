@@ -3,13 +3,14 @@ import { io } from "socket.io-client";
 
 const SERVER_URL =
   process.env.NODE_ENV === "production"
-    ? undefined // connects to same origin
+    ? undefined
     : process.env.REACT_APP_SERVER_URL || "http://localhost:4000";
 
 export default function useSocket() {
   const [users, setUsers] = useState({});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [geoError, setGeoError] = useState(null);
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -31,16 +32,25 @@ export default function useSocket() {
 
     // Watch geolocation
     let watchId = null;
-    if (navigator.geolocation) {
+    if (!navigator.geolocation) {
+      setGeoError("O seu browser não suporta geolocalização.");
+    } else {
       watchId = navigator.geolocation.watchPosition(
         (position) => {
+          setGeoError(null);
           const { latitude, longitude } = position.coords;
           socket.emit("update-location", { lat: latitude, lng: longitude });
         },
         (error) => {
-          console.error("Erro de geolocalização:", error.message);
+          if (error.code === 1) {
+            setGeoError("Permissão de localização negada. Ative nas definições do browser.");
+          } else if (error.code === 2) {
+            setGeoError("Localização indisponível.");
+          } else if (error.code === 3) {
+            setGeoError("Tempo limite para obter localização. A tentar novamente...");
+          }
         },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
       );
     }
 
@@ -52,5 +62,5 @@ export default function useSocket() {
     };
   }, []);
 
-  return { users, currentUserId, connected };
+  return { users, currentUserId, connected, geoError };
 }
